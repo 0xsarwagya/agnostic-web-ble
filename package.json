@@ -38,10 +38,10 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && tsc -p tsconfig.build.json",
     "check-types": "tsc --noEmit",
     "test": "vitest run",
-    "prepare": "tsup"
+    "prepare": "tsup && tsc -p tsconfig.build.json"
   },
   "publishConfig": {
     "access": "public"

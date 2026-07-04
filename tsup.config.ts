@@ -7,7 +7,7 @@ export default defineConfig({
     "adapters/mock": "src/adapters/mock.ts",
   },
   format: ["esm"],
-  dts: true,
+  dts: false,
   sourcemap: true,
   clean: true,
   target: "es2022",
