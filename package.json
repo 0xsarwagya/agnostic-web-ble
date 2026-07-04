@@ -1,0 +1,56 @@
+{
+  "name": "@0xsarwagya/agnostic-web-ble",
+  "version": "0.1.0",
+  "description": "Bluetooth Low Energy across web runtimes through one consistent API.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0xsarwagya/agnostic-web-ble.git"
+  },
+  "homepage": "https://oss.sarwagya.wtf/agnostic-web-ble",
+  "keywords": [
+    "bluetooth",
+    "ble",
+    "web-bluetooth",
+    "bluetooth-low-energy",
+    "adapter",
+    "typescript"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./adapters/native": {
+      "types": "./dist/adapters/native.d.ts",
+      "import": "./dist/adapters/native.js"
+    },
+    "./adapters/mock": {
+      "types": "./dist/adapters/mock.d.ts",
+      "import": "./dist/adapters/mock.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "check-types": "tsc --noEmit",
+    "test": "vitest run",
+    "prepare": "tsup"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/web-bluetooth": "^0.0.21",
+    "tsup": "^8.3.5",
+    "typescript": "5.9.2",
+    "vitest": "^3.0.0"
+  },
+  "packageManager": "pnpm@9.0.0"
+}
