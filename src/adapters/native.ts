@@ -196,6 +196,27 @@ export function nativeWebBluetoothAdapter(): BluetoothAdapter {
         typeof navigator !== "undefined" && navigator.bluetooth !== undefined
       );
     },
+    describeAvailability() {
+      const docsUrl =
+        "https://oss.sarwagya.wtf/agnostic-web-ble/docs/compatibility";
+      if (typeof navigator === "undefined") {
+        return {
+          available: false,
+          reason:
+            "No global `navigator` — this looks like a non-browser runtime (Node, edge worker without DOM shim).",
+          docsUrl,
+        };
+      }
+      if (navigator.bluetooth === undefined) {
+        return {
+          available: false,
+          reason:
+            "This browser does not implement Web Bluetooth. Firefox and Safari do not ship navigator.bluetooth; try Chrome, Edge, or Opera on desktop, or Chrome on Android.",
+          docsUrl,
+        };
+      }
+      return { available: true };
+    },
     async capabilities() {
       return {
         requestDevice: true,

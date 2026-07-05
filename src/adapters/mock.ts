@@ -34,6 +34,8 @@ export type MockAdapterOptions = {
   devices: MockDeviceSpec[];
   /** Report the adapter as unavailable to exercise selection fallbacks. */
   available?: boolean;
+  /** Reason surfaced by describeAvailability() when `available` is false. */
+  unavailableReason?: string;
 };
 
 /** Handle for driving a mock device from tests or demos. */
@@ -226,6 +228,16 @@ export function createMockAdapter(options: MockAdapterOptions): MockAdapter {
     id: ADAPTER_ID,
     isAvailable() {
       return options.available ?? true;
+    },
+    describeAvailability() {
+      const available = options.available ?? true;
+      if (available) return { available: true };
+      return {
+        available: false,
+        reason:
+          options.unavailableReason ??
+          "Mock adapter was constructed with `available: false`.",
+      };
     },
     async capabilities() {
       return {

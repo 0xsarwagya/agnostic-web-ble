@@ -34,6 +34,20 @@ export function runAdapterContractTests(options: {
       expect(typeof capabilities.requiresUserGesture).toBe("boolean");
     });
 
+    it("describeAvailability (if present) agrees with isAvailable", async () => {
+      const adapter = factory();
+      if (!adapter.describeAvailability) return;
+      const [avail, report] = await Promise.all([
+        Promise.resolve(adapter.isAvailable()),
+        Promise.resolve(adapter.describeAvailability()),
+      ]);
+      expect(report.available).toBe(avail);
+      if (!report.available) {
+        expect(typeof report.reason).toBe("string");
+        expect((report.reason ?? "").length).toBeGreaterThan(0);
+      }
+    });
+
     it("completes the full journey: request → connect → read → write → subscribe → disconnect", async () => {
       const adapter = factory();
       const device = await adapter.requestDevice({

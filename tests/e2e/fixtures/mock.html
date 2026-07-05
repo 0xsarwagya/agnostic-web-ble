@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Mock adapter fixture</title>
+  </head>
+  <body>
+    <button id="run">Run journey</button>
+    <pre id="log"></pre>
+    <script type="module">
+      import { createBluetooth } from "@0xsarwagya/agnostic-web-ble";
+      import { createMockAdapter } from "@0xsarwagya/agnostic-web-ble/adapters/mock";
+
+      const BATTERY_SERVICE = "0000180f-0000-1000-8000-00805f9b34fb";
+      const BATTERY_LEVEL = "00002a19-0000-1000-8000-00805f9b34fb";
+
+      const adapter = createMockAdapter({
+        devices: [
+          {
+            id: "mock-battery",
+            name: "Mock Battery",
+            services: [
+              {
+                uuid: BATTERY_SERVICE,
+                characteristics: [
+                  {
+                    uuid: BATTERY_LEVEL,
+                    value: new Uint8Array([0x64]),
+                    notifies: true,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+
+      const bt = createBluetooth({ adapters: [adapter] });
+
+      document.getElementById("run").addEventListener("click", async () => {
+        const result = {
+          deviceName: undefined,
+          connected: false,
+          readValue: -1,
+          notifications: [],
+          unsubscribed: false,
+          disconnected: false,
+        };
+        try {
+          const device = await bt.requestDevice({
+            filters: [{ services: [BATTERY_SERVICE] }],
+          });
+          result.deviceName = device.name;
+          device.on("disconnect", () => {
+            result.disconnected = true;
+          });
+
+          const connection = await device.connect();
+          result.connected = connection.connected;
+
+          const service = await connection.getPrimaryService(BATTERY_SERVICE);
+          const characteristic = await service.getCharacteristic(BATTERY_LEVEL);
+
+          const value = await characteristic.readValue();
+          result.readValue = value.getUint8(0);
+
+          const handle = adapter.device("mock-battery");
+          const unsubscribe = await characteristic.subscribe((v) => {
+            result.notifications.push(v.getUint8(0));
+          });
+          handle.notify(BATTERY_LEVEL, new Uint8Array([0x63]));
+          handle.notify(BATTERY_LEVEL, new Uint8Array([0x62]));
+          await new Promise((r) => setTimeout(r, 20));
+          unsubscribe();
+          result.unsubscribed = true;
+
+          await device.disconnect();
+        } catch (err) {
+          result.error = err?.message ?? String(err);
+        }
+        window.__result = result;
+        window.__done = true;
+      });
+    </script>
+  </body>
+</html>

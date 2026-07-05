@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Native adapter fixture</title>
+  </head>
+  <body>
+    <button id="connect">Connect</button>
+    <button id="finish">Finish</button>
+    <pre id="log"></pre>
+    <script type="module">
+      import { createBluetooth } from "@0xsarwagya/agnostic-web-ble";
+      import { nativeWebBluetoothAdapter } from "@0xsarwagya/agnostic-web-ble/adapters/native";
+
+      const BATTERY_SERVICE = "0000180f-0000-1000-8000-00805f9b34fb";
+      const BATTERY_LEVEL = "00002a19-0000-1000-8000-00805f9b34fb";
+
+      const bt = createBluetooth({ adapters: [nativeWebBluetoothAdapter()] });
+      const result = {
+        deviceName: undefined,
+        readValue: -1,
+        notifications: [],
+        disconnected: false,
+      };
+      window.__result = result;
+      window.__notifCount = 0;
+
+      let device = null;
+
+      document.getElementById("connect").addEventListener("click", async () => {
+        try {
+          device = await bt.requestDevice({
+            filters: [{ services: [BATTERY_SERVICE] }],
+          });
+          result.deviceName = device.name;
+          device.on("disconnect", () => {
+            result.disconnected = true;
+          });
+
+          const connection = await device.connect();
+          const service = await connection.getPrimaryService(BATTERY_SERVICE);
+          const characteristic = await service.getCharacteristic(BATTERY_LEVEL);
+
+          const value = await characteristic.readValue();
+          result.readValue = value.getUint8(0);
+
+          await characteristic.subscribe((v) => {
+            result.notifications.push(v.getUint8(0));
+            window.__notifCount = result.notifications.length;
+          });
+
+          window.__done = true;
+        } catch (err) {
+          result.error = err?.message ?? String(err);
+          window.__done = true;
+        }
+      });
+
+      document.getElementById("finish").addEventListener("click", async () => {
+        try {
+          if (device) await device.disconnect();
+        } catch (err) {
+          result.error = err?.message ?? String(err);
+        }
+        window.__finished = true;
+      });
+    </script>
+  </body>
+</html>

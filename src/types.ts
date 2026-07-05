@@ -52,10 +52,29 @@ export interface BluetoothDevice {
   on(event: "disconnect", listener: () => void): Unsubscribe;
 }
 
+/**
+ * Structured availability report. Lets callers explain to users *why*
+ * an adapter cannot run in this environment before `requestDevice()` is
+ * called. Optional — adapters that don't implement it fall back to
+ * `isAvailable()` at the client layer.
+ */
+export type AdapterAvailability = {
+  available: boolean;
+  /** Human-readable reason when `available` is false. */
+  reason?: string;
+  /** Docs link that explains the limitation and how to work around it. */
+  docsUrl?: string;
+};
+
 export interface BluetoothAdapter {
   /** Stable identifier, e.g. "native-web-bluetooth". */
   readonly id: string;
   isAvailable(): boolean | Promise<boolean>;
+  /**
+   * Optional richer availability report. Callers may use this to render
+   * an honest unsupported-runtime UI without calling `requestDevice()`.
+   */
+  describeAvailability?(): AdapterAvailability | Promise<AdapterAvailability>;
   capabilities(): Promise<BluetoothCapabilities>;
   requestDevice(options: RequestDeviceOptions): Promise<BluetoothDevice>;
 }

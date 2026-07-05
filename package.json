@@ -1,6 +1,6 @@
 {
   "name": "@0xsarwagya/agnostic-web-ble",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Bluetooth Low Energy across web runtimes through one consistent API.",
   "type": "module",
   "license": "MIT",
@@ -41,15 +41,24 @@
     "build": "tsup && tsc -p tsconfig.build.json",
     "check-types": "tsc --noEmit",
     "test": "vitest run",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:mock": "playwright test --project=chromium-mock --project=firefox-mock --project=webkit-mock",
+    "test:e2e:native": "playwright test --project=chromium-native",
+    "test:e2e:unsupported": "playwright test --project=firefox-unsupported --project=webkit-unsupported",
+    "test:e2e:install": "playwright install --with-deps",
     "prepare": "tsup && tsc -p tsconfig.build.json"
   },
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
+    "@playwright/test": "1.48.0",
+    "@types/node": "^22.15.3",
     "@types/web-bluetooth": "^0.0.21",
     "tsup": "^8.3.5",
     "typescript": "5.9.2",
+    "vite": "^5.4.11",
     "vitest": "^3.0.0"
   },
   "packageManager": "pnpm@9.0.0"

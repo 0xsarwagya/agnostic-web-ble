@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Unsupported-runtime fixture</title>
+  </head>
+  <body>
+    <button id="run">Run</button>
+    <pre id="log"></pre>
+    <script type="module">
+      import {
+        createBluetooth,
+        isBluetoothError,
+      } from "@0xsarwagya/agnostic-web-ble";
+      import { nativeWebBluetoothAdapter } from "@0xsarwagya/agnostic-web-ble/adapters/native";
+
+      const BATTERY_SERVICE = "0000180f-0000-1000-8000-00805f9b34fb";
+
+      document.getElementById("run").addEventListener("click", async () => {
+        const result = { threw: false };
+        const bt = createBluetooth({ adapters: [nativeWebBluetoothAdapter()] });
+
+        // describeAvailability() must not throw — that's the whole point.
+        try {
+          result.reports = await bt.describeAvailability();
+        } catch (err) {
+          result.describeError = err?.message ?? String(err);
+        }
+
+        try {
+          await bt.requestDevice({ filters: [{ services: [BATTERY_SERVICE] }] });
+        } catch (err) {
+          result.threw = true;
+          if (isBluetoothError(err)) {
+            result.name = err.name;
+            result.code = err.code;
+            result.operation = err.operation;
+            result.recoverable = err.recoverable;
+            result.message = err.message;
+          } else {
+            result.errorType = err?.constructor?.name ?? typeof err;
+            result.message = err?.message ?? String(err);
+          }
+        }
+        window.__result = result;
+        window.__done = true;
+      });
+    </script>
+  </body>
+</html>
